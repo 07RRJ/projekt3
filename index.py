@@ -65,7 +65,6 @@ thread = Thread(target=elevator.On)
 thread.start()
 
 while True:
-    
     try:
         floorRequest = int(getwch())
     except:
