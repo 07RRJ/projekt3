@@ -44,7 +44,7 @@ class Elevator:
     def On(self):
         sleep(1)
         Cls()
-        print(self.FLOOR, self.DIRECTION, self.FLOOR in self.LIST_UP, self.LIST_UP, self.FLOOR in self.LIST_DOWN, self.LIST_DOWN)
+        print(self.FLOOR, self.DIRECTION, self.LIST_UP, self.LIST_DOWN)
         self.CheckIfRequestToFloor()
         self.Move()
         if elevator.FLOOR in elevator.LIST_UP:
