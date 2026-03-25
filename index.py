@@ -14,15 +14,6 @@ class Elevator:
     LIST_DOWN = []
 
     def CheckIfRequestToFloor(self):
-        if self.FLOOR == 9:
-            self.DIRECTION = "down"
-            print("highest floor, going down")
-            return
-        elif self.FLOOR == 0:
-            self.DIRECTION = "up"
-            print("lowest floor, going up")
-            return
-
         if self.DIRECTION == "up" and self.LIST_UP:
             return
         elif self.DIRECTION == "down" and self.LIST_DOWN:
@@ -37,9 +28,16 @@ class Elevator:
 
     def Move(self):
         if self.DIRECTION == "up":
-            self.FLOOR += 1
+            if self.FLOOR < 9:
+                self.FLOOR += 1
+            else:
+                self.DIRECTION = None
+            
         if self.DIRECTION == "down":
-            self.FLOOR -= 1
+            if self.FLOOR > 0:
+                self.FLOOR -= 1
+            else:
+                self.DIRECTION = None
 
     def On(self):
         sleep(1)
