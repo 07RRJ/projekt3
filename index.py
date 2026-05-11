@@ -1,19 +1,26 @@
 import pygame
-from ui.load_assets import Assets, GetFolder, ResourcePath
+import sys
+from ui.load_assets import Assets
 from ui.elements import Button
+from threading import Thread
 
 pygame.init()
 
-BASE_WIDTH, BASE_HEIGHT = 1920, 1080
+BASE_WIDTH, BASE_HEIGHT = 2000, 1130
 screen = pygame.display.set_mode((BASE_WIDTH, BASE_HEIGHT), pygame.FULLSCREEN | pygame.SCALED)
 clock = pygame.time.Clock()
 
 class Elevator:
-    DIRECTION = None
-    FLOOR = 0
-    STOPING_ON_FLOOR = False
-    LIST_UP = []
-    LIST_DOWN = []
+    DIRECTION: bool = None
+    FLOOR: int = 0
+    STOPING_ON_FLOOR: bool = False
+    LIST_UP: list = []
+    LIST_DOWN: list = []
+    x: int = BASE_WIDTH//2-40
+    y: int = BASE_HEIGHT-120
+    rect_formula: str = "pygame.Rect(self.x, self.y, 80, 100)"
+    rect: pygame.rect = pygame.Rect(x, y, 80, 100)
+    elevator_shaft = pygame.Rect(BASE_WIDTH//2-50, 10, 100, BASE_HEIGHT-20)
 
     def CheckIfRequestToFloor(self):
         if self.DIRECTION == "up" and self.LIST_UP:
@@ -31,18 +38,26 @@ class Elevator:
     def Move(self):
         if self.DIRECTION == "up":
             if self.FLOOR < 9:
+                for i in range(110):
+                    clock.tick(100)
+                    self.y -= 1
+                    self.rect = eval(self.rect_formula)
                 self.FLOOR += 1
             else:
                 self.DIRECTION = None
             
         if self.DIRECTION == "down":
             if self.FLOOR > 0:
+                for i in range(110):
+                    clock.tick(100)
+                    self.y -= 1
+                    self.rect = eval(self.rect_formula)
                 self.FLOOR -= 1
             else:
                 self.DIRECTION = None
 
     def On(self):
-        print(self.FLOOR, self.DIRECTION, self.LIST_UP, self.LIST_DOWN)
+        print()
         self.CheckIfRequestToFloor()
         self.Move()
         if elevator.FLOOR in elevator.LIST_UP:
@@ -54,9 +69,16 @@ class Elevator:
         print("enter on floor: ")
         self.On()
 
+    def Draw(self):
+        pygame.draw.rect(screen, assets.BLACK[2], self.elevator_shaft)
+        pygame.draw.rect(screen, assets.BLACK[3], self.rect)
+
 elevator = Elevator()
 
+# floors = {i:i*110+20 for i in range(10)}
 floors = [i for i in range(10)]
+
+thread = Thread(target=elevator.On)
 
 def Start(assets):
     selectedIdx = None
@@ -71,23 +93,38 @@ def Start(assets):
         buttons.append(Button(f"{idx+1}", rect, assets.text_font, assets.BLACK[0]))
 
     while runing:
-        for y in range(10):
-            clock.tick(1)
-            screen.fill(assets.BLACK[4])
+        clock.tick(100)
+        screen.fill(assets.BLACK[4])
 
-            elevator_shaft = pygame.Rect(BASE_WIDTH//2-50, BASE_HEIGHT//12, 100, BASE_HEIGHT//12*10)
-            elevator = pygame.Rect(BASE_WIDTH//2-40, BASE_HEIGHT-BASE_HEIGHT//12*10-y*100, 80, 120)
+        elevator.Draw()
 
-            pygame.draw.rect(screen, assets.BLACK[2], elevator_shaft)
-            pygame.draw.rect(screen, assets.BLACK[3], elevator)
+        for idx, btn in enumerate(buttons):
+            btn.draw(idx == selectedIdx)
 
-            for button in buttons:
-                button.draw()
+        pygame.display.flip()
 
-            pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            pos = pygame.mouse.get_pos()
+            selectedIdx = None
+            for idx, btn in enumerate(buttons):
+                if btn.rect.collidepoint(pos):
+                    selectedIdx = idx
+                    print(selectedIdx)
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if elevator.FLOOR < selectedIdx and selectedIdx not in elevator.LIST_UP:
+                    elevator.LIST_UP.append(selectedIdx)
+                elif elevator.FLOOR > selectedIdx and selectedIdx not in elevator.LIST_DOWN:
+                    elevator.LIST_DOWN.append(selectedIdx)
 
 if __name__ == "__main__":
     screen.fill((1, 1, 1))
-    pygame.display.flip()
     assets = Assets()
+    title = assets.text_font.render("loading", True, (255, 255, 255))
+    screen.blit(title, (BASE_WIDTH//2-title.get_width()//2, BASE_HEIGHT//2-title.get_height()//2))
+    pygame.display.flip()
     Start(assets)
