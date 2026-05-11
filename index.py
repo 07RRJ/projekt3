@@ -1,5 +1,6 @@
 import pygame
-from ui.load_assets import Assets
+from ui.load_assets import Assets, GetFolder, ResourcePath
+from ui.elements import Button
 
 pygame.init()
 
@@ -57,31 +58,36 @@ elevator = Elevator()
 
 floors = [i for i in range(10)]
 
-def Start():
+def Start(assets):
     selectedIdx = None
     runing = True
 
+    ButtonRect = (
+        pygame.Rect(32, BASE_HEIGHT-62*i, 100, 30) for i in range(1, 11)
+    )
+
     buttons = []
+    for idx, rect in enumerate(ButtonRect):
+        buttons.append(Button(f"{idx+1}", rect, assets.text_font, assets.BLACK[0]))
 
     while runing:
         for y in range(10):
             clock.tick(1)
-            screen.fill((1, 1, 1))
-            rect = pygame.Rect(BASE_WIDTH//2-40, BASE_HEIGHT-BASE_HEIGHT//20-y*100, 80, 120)
+            screen.fill(assets.BLACK[4])
 
-            pygame.draw.rect(screen, (100, 100, 100), rect)
+            elevator_shaft = pygame.Rect(BASE_WIDTH//2-50, BASE_HEIGHT//12, 100, BASE_HEIGHT//12*10)
+            elevator = pygame.Rect(BASE_WIDTH//2-40, BASE_HEIGHT-BASE_HEIGHT//12*10-y*100, 80, 120)
 
-            pygame.display.flip()
+            pygame.draw.rect(screen, assets.BLACK[2], elevator_shaft)
+            pygame.draw.rect(screen, assets.BLACK[3], elevator)
 
-        for y in range(10):
-            clock.tick(1)
-            screen.fill((1, 1, 1))
-            rect = pygame.Rect(BASE_WIDTH//2-40, BASE_HEIGHT-BASE_HEIGHT//20-(10-y)*100, 80, 120)
-
-            pygame.draw.rect(screen, (100, 100, 100), rect)
+            for button in buttons:
+                button.draw()
 
             pygame.display.flip()
 
 if __name__ == "__main__":
+    screen.fill((1, 1, 1))
+    pygame.display.flip()
     assets = Assets()
-    Start()
+    Start(assets)

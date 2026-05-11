@@ -8,18 +8,15 @@ screen = pygame.display.set_mode((BASE_WIDTH, BASE_HEIGHT), pygame.FULLSCREEN | 
 
 @dataclass(slots=True)
 class Button:
-    def __init__(self, text, rect, assets, ):
-        self.text: str = text
-        self.rect: pygame.Rect
-        self.font: pygame.font.Font = assets.text_font
-        self.label: pygame.Surface = None
-        self.label_rect: pygame.Rect = None
+    text: str
+    rect: pygame.Rect
+    font: pygame.font.Font
+    colour: tuple
+    label: bool = False
+    label_rect: bool = False
 
     def __post_init__(self):
-        if self.textColour:
-            self.label = self.font.render(self.text, True, (0, 0, 0))
-        else:
-            self.label = self.font.render(self.text, True, (255, 255, 255))
+        self.label = self.font.render(self.text, True, (255, 255, 255))
         self.label_rect = self.label.get_rect(center=self.rect.center)
 
     def draw(self, is_selected=False):
@@ -27,6 +24,6 @@ class Button:
             highlight_rect = self.rect.inflate(12, 12)
             pygame.draw.rect(screen, (255, 200, 0), highlight_rect, border_radius=8)
 
-        pygame.draw.rect(screen, self.color, self.rect, border_radius=8)
+        pygame.draw.rect(screen, self.colour, self.rect, border_radius=8)
 
         screen.blit(self.label, self.label_rect)
