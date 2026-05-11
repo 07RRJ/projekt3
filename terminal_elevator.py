@@ -52,7 +52,8 @@ class Elevator:
             print("you reached the floor")
             elevator.LIST_DOWN.remove(elevator.FLOOR)
         print("enter on floor: ")
-        self.On()
+        thread = Thread(target=self.On)
+        thread.start()
 
 elevator = Elevator()
 
