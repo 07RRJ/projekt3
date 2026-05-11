@@ -1,11 +1,10 @@
-import pygame
-from ui.load_assets import Assets
+from os import system
+from threading import Thread
+from time import sleep
+from msvcrt import getwch
 
-pygame.init()
-
-BASE_WIDTH, BASE_HEIGHT = 1920, 1080
-screen = pygame.display.set_mode((BASE_WIDTH, BASE_HEIGHT), pygame.FULLSCREEN | pygame.SCALED)
-clock = pygame.time.Clock()
+def Cls():
+    system("cls")
 
 class Elevator:
     DIRECTION = None
@@ -41,6 +40,8 @@ class Elevator:
                 self.DIRECTION = None
 
     def On(self):
+        sleep(1)
+        Cls()
         print(self.FLOOR, self.DIRECTION, self.LIST_UP, self.LIST_DOWN)
         self.CheckIfRequestToFloor()
         self.Move()
@@ -57,31 +58,17 @@ elevator = Elevator()
 
 floors = [i for i in range(10)]
 
-def Start():
-    selectedIdx = None
-    runing = True
+thread = Thread(target=elevator.On)
 
-    buttons = []
+thread.start()
 
-    while runing:
-        for y in range(10):
-            clock.tick(1)
-            screen.fill((1, 1, 1))
-            rect = pygame.Rect(BASE_WIDTH//2-40, BASE_HEIGHT-BASE_HEIGHT//20-y*100, 80, 120)
-
-            pygame.draw.rect(screen, (100, 100, 100), rect)
-
-            pygame.display.flip()
-
-        for y in range(10):
-            clock.tick(1)
-            screen.fill((1, 1, 1))
-            rect = pygame.Rect(BASE_WIDTH//2-40, BASE_HEIGHT-BASE_HEIGHT//20-(10-y)*100, 80, 120)
-
-            pygame.draw.rect(screen, (100, 100, 100), rect)
-
-            pygame.display.flip()
-
-if __name__ == "__main__":
-    assets = Assets()
-    Start()
+while True:
+    try:
+        floorRequest = int(getwch())
+    except:
+        pass
+    if floorRequest != elevator.FLOOR and floorRequest in floors:
+        if elevator.FLOOR < floorRequest and floorRequest not in elevator.LIST_UP:
+            elevator.LIST_UP.append(floorRequest)
+        elif elevator.FLOOR > floorRequest and floorRequest not in elevator.LIST_DOWN:
+            elevator.LIST_DOWN.append(floorRequest)
