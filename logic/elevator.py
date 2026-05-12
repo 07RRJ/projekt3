@@ -8,6 +8,7 @@ floors = {i:i*110+20 for i in range(10)}
 
 class Elevator:
     DIRECTION: bool = None
+    MOVING = False
     FLOOR: int = 0
     STOPING_ON_FLOOR: bool = False
     LIST_UP: list = []
@@ -38,7 +39,7 @@ class Elevator:
         if self.DIRECTION == "up":
             if self.FLOOR < 9:
                 self.FLOOR += 1
-                while self.y != floors[self.FLOOR]:
+                for i in range(110):
                     clock.tick(100)
                     self.y -= 1
                     self.rect = eval(self.rect_formula)
@@ -48,7 +49,7 @@ class Elevator:
         if self.DIRECTION == "down":
             if self.FLOOR > 0:
                 self.FLOOR -= 1
-                while self.y != floors[self.FLOOR]:
+                for i in range(110):
                     clock.tick(100)
                     self.y += 1
                     self.rect = eval(self.rect_formula)
@@ -57,7 +58,7 @@ class Elevator:
 
     def On(self):
         while self.LIST_UP or self.LIST_DOWN:
-            clock.tick(10)
+            clock.tick(100)
             self.CheckIfRequestToFloor()
             self.Move()
             if self.FLOOR in self.LIST_UP:
@@ -66,6 +67,21 @@ class Elevator:
             elif self.FLOOR in self.LIST_DOWN:
                 clock.tick(1)
                 self.LIST_DOWN.remove(self.FLOOR)
+            self.CheckIfRequestToFloor()
+        
+        # if floors[self.FLOOR] != self.y:
+        #     offset = floors[self.FLOOR] - self.y
+        #     if offset < 0:
+        #         dirrection = "UP"
+        #         offset *= -1
+        #     else:
+        #         dirrection = "DOWN"
+        #     self.DIRECTION = dirrection
+        #     for y in range(offset):
+        #         self.y += 1
+        #         clock.tick(100)
+
+        self.MOVING = False
 
     def Draw(self, assets):
         pygame.draw.rect(screen, assets.BLACK[2], self.elevator_shaft)

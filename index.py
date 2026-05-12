@@ -51,13 +51,15 @@ def Start(assets):
                     selectedIdx = idx
             
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if selectedIdx in floors:
-                    if not elevator.LIST_UP or not elevator.LIST_DOWN:
-                        Thread(target=elevator.On).start()
+                if selectedIdx in floors.keys():
+                    print(elevator.DIRECTION, selectedIdx)
                     if elevator.FLOOR < selectedIdx and selectedIdx not in elevator.LIST_UP:
                         elevator.LIST_UP.append(selectedIdx)
                     elif elevator.FLOOR > selectedIdx and selectedIdx not in elevator.LIST_DOWN:
                         elevator.LIST_DOWN.append(selectedIdx)
+                    if elevator.MOVING == False:
+                        Thread(target=elevator.On).start()
+                        elevator.MOVING = True
 
 if __name__ == "__main__":
     screen.fill((1, 1, 1))
