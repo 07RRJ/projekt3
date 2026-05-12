@@ -1,10 +1,12 @@
 import pygame, os, sys
 from dataclasses import dataclass
+from ui.load_assets import Assets
 
 pygame.init()
 
 BASE_WIDTH, BASE_HEIGHT = 1920, 1080
 screen = pygame.display.set_mode((BASE_WIDTH, BASE_HEIGHT), pygame.FULLSCREEN | pygame.SCALED)
+assets = Assets()
 
 @dataclass(slots=True)
 class Button:
@@ -27,3 +29,6 @@ class Button:
         pygame.draw.rect(screen, self.colour, self.rect, border_radius=8)
 
         screen.blit(self.label, self.label_rect)
+
+def Text(text):
+    return assets.text_font.render(text, True, (25, 25, 25))

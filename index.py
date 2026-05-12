@@ -1,7 +1,7 @@
 import pygame
 import sys
 from ui.load_assets import Assets
-from ui.elements import Button
+from ui.elements import Button, Text
 from logic.elevator import Elevator
 from threading import Thread
 
@@ -37,6 +37,8 @@ def Start(assets):
         for idx, btn in enumerate(buttons):
             btn.draw(idx == selectedIdx)
 
+        screen.blit(elevator.GOING, (30, 30))
+
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -52,11 +54,13 @@ def Start(assets):
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if selectedIdx in floors.keys():
-                    print(elevator.DIRECTION, selectedIdx)
                     if elevator.FLOOR < selectedIdx and selectedIdx not in elevator.LIST_UP:
                         elevator.LIST_UP.append(selectedIdx)
                     elif elevator.FLOOR > selectedIdx and selectedIdx not in elevator.LIST_DOWN:
                         elevator.LIST_DOWN.append(selectedIdx)
+                    
+                    elevator.TellDirrection()
+
                     if elevator.MOVING == False:
                         Thread(target=elevator.On).start()
                         elevator.MOVING = True

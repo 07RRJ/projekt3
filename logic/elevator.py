@@ -1,4 +1,5 @@
 import pygame
+from ui.elements import Text
 
 BASE_WIDTH, BASE_HEIGHT = 2000, 1130
 screen = pygame.display.set_mode((BASE_WIDTH, BASE_HEIGHT), pygame.FULLSCREEN | pygame.SCALED)
@@ -8,12 +9,13 @@ floors = {i:i*110+20 for i in range(10)}
 
 class Elevator:
     DIRECTION: bool = None
-    MOVING = False
+    MOVING: bool = False
+    GOING = Text("On floor: 1")
     FLOOR: int = 0
     STOPING_ON_FLOOR: bool = False
     LIST_UP: list = []
     LIST_DOWN: list = []
-    next_floor: int = FLOOR
+    # next_floor: int = FLOOR
     x: int = BASE_WIDTH//2-40
     y: int = BASE_HEIGHT-120
     rect_formula: str = "pygame.Rect(self.x, self.y, 80, 100)"
@@ -22,10 +24,10 @@ class Elevator:
 
     def CheckIfRequestToFloor(self):
         if self.DIRECTION == "up" and self.LIST_UP:
-            self.next_floor = min(self.LIST_UP)
+            # self.next_floor = min(self.LIST_UP)
             return
         elif self.DIRECTION == "down" and self.LIST_DOWN:
-            self.next_floor = max(self.LIST_DOWN)
+            # self.next_floor = max(self.LIST_DOWN)
             return
         else:
             self.DIRECTION = None
@@ -34,6 +36,16 @@ class Elevator:
             self.DIRECTION = "up"
         elif self.LIST_DOWN and self.DIRECTION == None:
             self.DIRECTION = "down"
+
+    def TellDirrection(self):
+        text = ""
+        if self.DIRECTION == "up":
+            text = f"Going up to floor: {min(self.LIST_UP)+1}"
+        elif self.DIRECTION == "down":
+            text = f"Going down to floor: {max(self.LIST_DOWN)+1}"
+        else:
+            text = f"On floor: {self.FLOOR+1}"
+        self.GOING = Text(text)
 
     def Move(self):
         if self.DIRECTION == "up":
@@ -60,6 +72,7 @@ class Elevator:
         while self.LIST_UP or self.LIST_DOWN:
             clock.tick(100)
             self.CheckIfRequestToFloor()
+            self.TellDirrection()
             self.Move()
             if self.FLOOR in self.LIST_UP:
                 clock.tick(1)
@@ -68,18 +81,7 @@ class Elevator:
                 clock.tick(1)
                 self.LIST_DOWN.remove(self.FLOOR)
             self.CheckIfRequestToFloor()
-        
-        # if floors[self.FLOOR] != self.y:
-        #     offset = floors[self.FLOOR] - self.y
-        #     if offset < 0:
-        #         dirrection = "UP"
-        #         offset *= -1
-        #     else:
-        #         dirrection = "DOWN"
-        #     self.DIRECTION = dirrection
-        #     for y in range(offset):
-        #         self.y += 1
-        #         clock.tick(100)
+            self.TellDirrection()
 
         self.MOVING = False
 
