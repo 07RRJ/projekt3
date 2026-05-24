@@ -71,4 +71,5 @@ if __name__ == "__main__":
     title = assets.text_font.render("loading", True, (255, 255, 255))
     screen.blit(title, (BASE_WIDTH//2-title.get_width()//2, BASE_HEIGHT//2-title.get_height()//2))
     pygame.display.flip()
+    elevator.elevator_shaft = assets.shaft
     Start(assets)

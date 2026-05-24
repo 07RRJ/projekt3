@@ -19,3 +19,6 @@ class Assets:
 
     def __init__(self):
         self.text_font = pygame.font.Font(ResourcePath("ui/assets/fonts/corbelb.ttf"), 24)
+
+        self.shaft = pygame.image.load(ResourcePath("ui/assets/img/shaft.png")).convert_alpha()
+        self.shaft = pygame.transform.scale(self.shaft, (100, 1110))

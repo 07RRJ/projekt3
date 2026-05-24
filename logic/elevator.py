@@ -1,7 +1,7 @@
 import pygame
 from ui.elements import Text
 
-BASE_WIDTH, BASE_HEIGHT = 2000, 1130
+BASE_WIDTH, BASE_HEIGHT = 2000, 1130 #     elevator_shaft = pygame.Rect(BASE_WIDTH//2-50, 10, 100, BASE_HEIGHT-20)
 screen = pygame.display.set_mode((BASE_WIDTH, BASE_HEIGHT), pygame.FULLSCREEN | pygame.SCALED)
 clock = pygame.time.Clock()
 
@@ -20,7 +20,8 @@ class Elevator:
     y: int = BASE_HEIGHT-120
     rect_formula: str = "pygame.Rect(self.x, self.y, 80, 100)"
     rect: pygame.rect = pygame.Rect(x, y, 80, 100)
-    elevator_shaft = pygame.Rect(BASE_WIDTH//2-50, 10, 100, BASE_HEIGHT-20)
+    elevator_shaft = None
+    # elevator_shaft = pygame.Rect(BASE_WIDTH//2-50, 10, 100, BASE_HEIGHT-20)
 
     def CheckIfRequestToFloor(self):
         if self.DIRECTION == "up" and self.LIST_UP:
@@ -86,5 +87,6 @@ class Elevator:
         self.MOVING = False
 
     def Draw(self, assets):
-        pygame.draw.rect(screen, assets.BLACK[2], self.elevator_shaft)
+        # pygame.draw.rect(screen, assets.BLACK[2], self.elevator_shaft)
+        screen.blit(self.elevator_shaft, (BASE_WIDTH//2-50, 10))
         pygame.draw.rect(screen, assets.BLACK[3], self.rect)
