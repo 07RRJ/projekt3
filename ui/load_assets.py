@@ -2,6 +2,8 @@ import sys, os, pygame
 
 pygame.init()
 
+BUTTON_SIZE = (50, 30)
+
 def GetFolder():
     if hasattr(sys, "_MEIPASS"):
         return sys._MEIPASS
@@ -22,3 +24,13 @@ class Assets:
 
         self.shaft = pygame.image.load(ResourcePath("ui/assets/img/shaft.png")).convert_alpha()
         self.shaft = pygame.transform.scale(self.shaft, (100, 1110))
+
+        self.up_button = pygame.image.load(ResourcePath("ui/assets/img/up_button.png")).convert_alpha()
+        self.up_button = pygame.transform.scale(self.up_button, BUTTON_SIZE)
+        self.up_button_selected = pygame.image.load(ResourcePath("ui/assets/img/up_button_selected.png")).convert_alpha()
+        self.up_button_selected = pygame.transform.scale(self.up_button_selected, BUTTON_SIZE)
+
+        self.down_button = pygame.image.load(ResourcePath("ui/assets/img/down_button.png")).convert_alpha()
+        self.down_button = pygame.transform.scale(self.down_button, BUTTON_SIZE)
+        self.down_button_selected = pygame.image.load(ResourcePath("ui/assets/img/down_button_selected.png")).convert_alpha()
+        self.down_button_selected = pygame.transform.scale(self.down_button_selected, BUTTON_SIZE)

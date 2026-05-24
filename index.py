@@ -3,7 +3,6 @@ import sys
 from ui.load_assets import Assets
 from ui.elements import Button, Text
 from logic.elevator import Elevator
-from threading import Thread
 
 pygame.init()
 
@@ -13,20 +12,49 @@ clock = pygame.time.Clock()
 
 elevator = Elevator()
 
-floors = {i:i*110+20 for i in range(10)}
-# floors = [i for i in range(10)]
-
 def Start(assets):
     selectedIdx = None
     runing = True
 
-    ButtonRect = (
-        pygame.Rect(32, BASE_HEIGHT-62*i, 100, 30) for i in range(1, 11)
+    buttonRect = (
+        pygame.Rect(32+(i%3)*58 if i < 9 else 32+58, BASE_HEIGHT-264+58*(i//3), 50, 50) for i in range(10)
     )
 
     buttons = []
-    for idx, rect in enumerate(ButtonRect):
-        buttons.append(Button(f"{idx+1}", rect, assets.text_font, assets.BLACK[0]))
+    for idx, rect in enumerate(buttonRect):
+        buttons.append(
+            Button(
+                Text=f"{idx+1}",
+                Rect=rect,
+                Font=assets.text_font,
+                Colour=assets.BLACK[0]
+            )
+        )
+
+    directionPos = (
+        (
+            BASE_WIDTH//2-110 if i % 4 > 1 else BASE_WIDTH//2+60,
+            15+i//2*110+60 if i%2 else 35+i//2*110
+        ) for i in range(1, 19)
+    )
+
+    for idx, pos in enumerate(directionPos):
+        if idx%2:
+            buttons.append(
+                Button(
+                    BaseImg=assets.up_button,
+                    SelectedImg=assets.up_button_selected,
+                    Pos=pos
+                )
+            )
+        else:
+            buttons.append(
+                Button(
+                    BaseImg=assets.down_button,
+                    SelectedImg=assets.down_button_selected,
+                    Pos=pos
+                )
+            )
 
     while runing:
         clock.tick(100)
@@ -53,17 +81,8 @@ def Start(assets):
                     selectedIdx = idx
             
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if selectedIdx in floors.keys():
-                    if elevator.FLOOR < selectedIdx and selectedIdx not in elevator.LIST_UP:
-                        elevator.LIST_UP.append(selectedIdx)
-                    elif elevator.FLOOR > selectedIdx and selectedIdx not in elevator.LIST_DOWN:
-                        elevator.LIST_DOWN.append(selectedIdx)
-                    
-                    elevator.TellDirrection()
-
-                    if elevator.MOVING == False:
-                        Thread(target=elevator.On).start()
-                        elevator.MOVING = True
+                if selectedIdx is not None and selectedIdx != elevator.FLOOR:
+                    elevator.AddFloor(selectedIdx)
 
 if __name__ == "__main__":
     screen.fill((1, 1, 1))
