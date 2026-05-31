@@ -9,121 +9,169 @@ clock = pygame.time.Clock()
 floors = {i:i*110+20 for i in range(10)}
 dirrectionKeys = {i: ("up" if i%2 else "down", 9-(i-9)//2) for i in range(10, 28)}
 
+DOOR_TIME = 80
+
 class Elevator:
     _lock = Lock()
-    DIRECTION: bool = None
+    DIRECTION: str = None
     MOVING: bool = False
     GOING = Text("On floor: 1")
     FLOOR: int = 0
-    STOPING_ON_FLOOR: bool = False
+
+    LIST_CABIN: list = []
     LIST_UP: list = []
     LIST_DOWN: list = []
+
     elevator_shaft = None
 
     def __init__(self):
-        self.x: int = BASE_WIDTH//2-40
-        self.y: int = BASE_HEIGHT-120
-        self.rect: pygame.rect = pygame.Rect(self.x, self.y, 80, 100)
+        self.x: int = BASE_WIDTH // 2 - 40
+        self.y: int = BASE_HEIGHT - 120
+        self.rect: pygame.Rect = pygame.Rect(self.x, self.y, 80, 100)
 
-    def AddFloor(self, floor):
-        if floor in floors.keys(): # floor 1-10 with keypad (0-9)
-            if self.FLOOR < floor and floor not in self.LIST_UP:
-                self.LIST_UP.append(floor)
-            elif self.FLOOR > floor and floor not in self.LIST_DOWN:
-                self.LIST_DOWN.append(floor)
-            else:
-                return
+    def add_floor(self, floor):
+        if floor in floors:
+            if floor != self.FLOOR and floor not in self.LIST_CABIN:
+                self.LIST_CABIN.append(floor)
 
-        elif floor in dirrectionKeys.keys(): # up/down buttons outside self (10-27). even = down (10, 12, 14). odd = up (11, 13, 15)
-            print(dirrectionKeys[floor])
-            selectedDir = dirrectionKeys[floor][0]
-            selectedFloor = dirrectionKeys[floor][1]
-            if selectedDir == "up" and selectedFloor not in self.LIST_UP:
-                self.LIST_UP.append(selectedFloor)
-            elif selectedDir == "down" and selectedFloor not in self.LIST_DOWN:
-                self.LIST_DOWN.append(selectedFloor)
-            else:
-                return
+        elif floor in dirrectionKeys:
+            direction, target = dirrectionKeys[floor]
+            if direction == "up" and target not in self.LIST_UP:
+                self.LIST_UP.append(target)
+            elif direction == "down" and target not in self.LIST_DOWN:
+                self.LIST_DOWN.append(target)
+        else:
+            return
 
-        self.TellDirrection()
+        self.update_dirrection()
+        self.tell_dirrection()
+
         with self._lock:
-            if self.MOVING == False:
+            if not self.MOVING:
                 Thread(target=self.On, daemon=True).start()
                 self.MOVING = True
 
-    def CheckIfRequestToFloor(self):
-        if self.DIRECTION == "up" and self.LIST_UP:
-            return
-        elif self.DIRECTION == "down" and self.LIST_DOWN:
-            return
-        else:
-            self.DIRECTION = None
-        
-        if self.LIST_UP and self.DIRECTION == None:
-            try:
-                if min(self.LIST_UP) > self.FLOOR:
-                    self.DIRECTION = "up"
-                else:
-                    self.DIRECTION = "down"
-            except:
-                pass
-        elif self.LIST_DOWN and self.DIRECTION == None:
-            try:
-                if max(self.LIST_UP) < self.FLOOR:
-                    self.DIRECTION = "down"
-                else:
-                    self.DIRECTION = "up"
-            except:
-                pass
+    def update_dirrection(self):
+        all_floors = set(self.LIST_CABIN + self.LIST_UP + self.LIST_DOWN)
 
-    def TellDirrection(self):
-        text = ""
+        if not all_floors:
+            self.DIRECTION = None
+            return
+
+        above = [floor for floor in all_floors if floor > self.FLOOR]
+        below = [floor for floor in all_floors if floor < self.FLOOR]
+        here = self.FLOOR in all_floors
+
         if self.DIRECTION == "up":
-            text = f"Moving up to floor: {min(self.LIST_UP)+1}"
+            if above:
+                return
+            if below or here:
+                self.DIRECTION = "down"
+            else:
+                self.DIRECTION = None
+
         elif self.DIRECTION == "down":
-            text = f"Moving down to floor: {max(self.LIST_DOWN)+1}"
+            if below:
+                return
+            if above or here:
+                self.DIRECTION = "up"
+            else:
+                self.DIRECTION = None
+
         else:
-            text = f"On floor: {self.FLOOR+1}"
+            if above:
+                self.DIRECTION = "up"
+            elif below:
+                self.DIRECTION = "down"
+
+    def should_stop_here(self):
+        floor = self.FLOOR
+
+        if floor in self.LIST_CABIN:
+            return True
+
+        if self.DIRECTION == "up" and floor in self.LIST_UP:
+            return True
+        if self.DIRECTION == "down" and floor in self.LIST_DOWN:
+            return True
+
+        if floor == 9 and floor in self.LIST_DOWN:
+            self.DIRECTION = "down"
+            return True
+        if floor == 0 and floor in self.LIST_UP:
+            self.DIRECTION = "up"
+            return True
+
+        return False
+
+    def clear_current_floor(self):
+        floor = self.FLOOR
+
+        if floor in self.LIST_CABIN:
+            self.LIST_CABIN.remove(floor)
+
+        if self.DIRECTION == "up" and floor in self.LIST_UP:
+            self.LIST_UP.remove(floor)
+        elif self.DIRECTION == "down" and floor in self.LIST_DOWN:
+            self.LIST_DOWN.remove(floor)
+
+    def tell_dirrection(self):
+        all_floors = set(self.LIST_CABIN + self.LIST_UP + self.LIST_DOWN)
+        if self.DIRECTION == "up":
+            ahead = [floor for floor in all_floors if floor > self.FLOOR]
+            target = (min(ahead) + 1) if ahead else (self.FLOOR + 1)
+            text = f"Moving up to floor: {target}"
+        elif self.DIRECTION == "down":
+            ahead = [floor for floor in all_floors if floor < self.FLOOR]
+            target = (max(ahead) + 1) if ahead else (self.FLOOR + 1)
+            text = f"Moving down to floor: {target}"
+        else:
+            text = f"On floor: {self.FLOOR + 1}"
         self.GOING = Text(text)
 
-    def Move(self):
+    def move(self):
         if self.DIRECTION == "up":
             if self.FLOOR < 9:
                 self.FLOOR += 1
-                for i in range(110):
+                for _ in range(110):
                     clock.tick(200)
                     self.y -= 1
                     self.rect = pygame.Rect(self.x, self.y, 80, 100)
             else:
-                self.DIRECTION = None
-                return
-            
-        if self.DIRECTION == "down":
+                self.update_dirrection()
+
+        elif self.DIRECTION == "down":
             if self.FLOOR > 0:
                 self.FLOOR -= 1
-                for i in range(110):
+                for _ in range(110):
                     clock.tick(200)
                     self.y += 1
                     self.rect = pygame.Rect(self.x, self.y, 80, 100)
             else:
-                self.DIRECTION = None
-                return
+                self.update_dirrection()
 
     def On(self):
-        while self.LIST_UP or self.LIST_DOWN:
+        while self.LIST_CABIN or self.LIST_UP or self.LIST_DOWN:
             clock.tick(100)
-            if self.DIRECTION == "up" and self.FLOOR in self.LIST_UP:
-                self.LIST_UP.remove(self.FLOOR)
-                clock.tick(1)
-            elif self.DIRECTION == "down" and self.FLOOR in self.LIST_DOWN:
-                self.LIST_DOWN.remove(self.FLOOR)
-                clock.tick(1)
-            self.CheckIfRequestToFloor()
-            self.TellDirrection()
-            self.Move()
+
+            if self.should_stop_here():
+                self.clear_current_floor()
+                for _ in range(DOOR_TIME):
+                    clock.tick(100)
+
+            self.update_dirrection()
+            self.tell_dirrection()
+
+            if not (self.LIST_CABIN or self.LIST_UP or self.LIST_DOWN):
+                break
+
+            if self.DIRECTION is not None:
+                self.move()
 
         self.MOVING = False
+        self.DIRECTION = None
+        self.tell_dirrection()
 
-    def Draw(self, assets):
-        screen.blit(self.elevator_shaft, (BASE_WIDTH//2-50, 10))
+    def draw(self, assets):
+        screen.blit(self.elevator_shaft, (BASE_WIDTH // 2 - 50, 10))
         pygame.draw.rect(screen, assets.BLACK[3], self.rect)

@@ -12,7 +12,7 @@ clock = pygame.time.Clock()
 
 elevator = Elevator()
 
-def Start(assets):
+def start(assets):
     selectedIdx = None
     runing = True
 
@@ -60,7 +60,7 @@ def Start(assets):
         clock.tick(100)
         screen.fill(assets.BLACK[4])
 
-        elevator.Draw(assets)
+        elevator.draw(assets)
 
         for idx, btn in enumerate(buttons):
             btn.draw(idx == selectedIdx)
@@ -82,7 +82,7 @@ def Start(assets):
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if selectedIdx is not None and selectedIdx != elevator.FLOOR:
-                    elevator.AddFloor(selectedIdx)
+                    elevator.add_floor(selectedIdx)
 
 if __name__ == "__main__":
     screen.fill((1, 1, 1))
@@ -91,4 +91,4 @@ if __name__ == "__main__":
     screen.blit(title, (BASE_WIDTH//2-title.get_width()//2, BASE_HEIGHT//2-title.get_height()//2))
     pygame.display.flip()
     elevator.elevator_shaft = assets.shaft
-    Start(assets)
+    start(assets)
